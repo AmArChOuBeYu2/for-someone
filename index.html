@@ -241,26 +241,6 @@
     opacity:0.75;
   }
 
-  /* ---------- SOUND TOGGLE ---------- */
-  #soundToggle{
-    position:fixed;
-    top:max(14px, env(safe-area-inset-top, 0px));
-    right:max(14px, env(safe-area-inset-right, 0px));
-    z-index:50;
-    width:44px; height:44px; border-radius:50%;
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,209,222,0.35);
-    color:var(--rose-soft);
-    font-size:1.15rem;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    backdrop-filter:blur(6px);
-  }
-  .white-bg ~ #soundToggle, body.on-white #soundToggle{
-    color:var(--rose-final);
-    border-color:rgba(217,74,118,0.35);
-    background:rgba(217,74,118,0.08);
-  }
 
   @media (min-width:900px){
     .scene{ padding:6vh 10vw; }
@@ -281,7 +261,7 @@
 </head>
 <body>
 
-<button id="soundToggle" aria-label="Toggle music">🔇</button>
+
 
 <audio id="bgm" loop preload="auto" playsinline>
   <source src="assets/Soch Na Sake Airlift 128 Kbps.mp3" type="audio/mpeg">
@@ -367,7 +347,7 @@
       "Just Give Me One Chance to be a Part of Your Life"
     </p>
     <a class="btn spotify-link"
-       href="https://open.spotify.com/playlist/6lLgx034CKPtPmy9cg28Iy?si=kcfT9By6ShKIOMyK8rxgug"
+       href="https://open.spotify.com/playlist/2OEz6s8vbscNCGEFWsTrkh?si=fJTOx0JJRvmb5jjE9oxdjg"
        target="_blank" rel="noopener noreferrer">
       Open my playlist on Spotify
     </a>
@@ -682,48 +662,25 @@
   }
   spawnPetals();
 
-  // ---------- Music (loops entire experience) ----------
+  // ---------- Music (always on, loops entire experience) ----------
   const bgm = document.getElementById("bgm");
-  const soundToggle = document.getElementById("soundToggle");
-  let musicOn = false;
-  let unlockBound = false;
-
-  function updateSoundIcon(){
-    soundToggle.textContent = musicOn ? "🔊" : "🔇";
-  }
+  bgm.volume = 0.55;
 
   function tryPlayMusic(){
-    bgm.volume = 0.55;
-    return bgm.play().then(()=>{
-      musicOn = true;
-      updateSoundIcon();
-    }).catch(()=>{ /* blocked until user taps, or MP3 not added yet */ });
+    bgm.play().catch(()=>{ /* browser blocked autoplay, will start on first tap */ });
   }
 
-  function bindMusicUnlock(){
-    if(unlockBound) return;
-    unlockBound = true;
-    const unlock = ()=>{
-      tryPlayMusic();
-      document.removeEventListener("pointerdown", unlock);
-      document.removeEventListener("touchstart", unlock);
-    };
-    document.addEventListener("pointerdown", unlock, {once:true});
-    document.addEventListener("touchstart", unlock, {once:true, passive:true});
-  }
-
+  // Try autoplay immediately
   tryPlayMusic();
-  bindMusicUnlock();
 
-  soundToggle.addEventListener("click", ()=>{
-    if(musicOn){
-      bgm.pause();
-      musicOn = false;
-      updateSoundIcon();
-    } else {
-      tryPlayMusic();
-    }
-  });
+  // Fallback: start music on the very first user interaction (required by mobile browsers)
+  const unlock = ()=>{
+    tryPlayMusic();
+    document.removeEventListener("pointerdown", unlock);
+    document.removeEventListener("touchstart", unlock);
+  };
+  document.addEventListener("pointerdown", unlock, {once:true});
+  document.addEventListener("touchstart", unlock, {once:true, passive:true});
 })();
 </script>
 
